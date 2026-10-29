@@ -1,0 +1,8 @@
+# Dependencias (se regeneran con npm install)
+node_modules/
+
+# Secretos (llave de Google, ID del Sheet)
+.env
+
+# Descargas temporales de Cypress
+cypress/downloads/
