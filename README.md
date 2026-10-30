@@ -122,8 +122,8 @@ Todo lo que se puede cambiar está en archivos de configuración; **no hay que t
 {
     nombre: 'movil',
     habilitado: true,
-    cada: 20,
-    unidad: 'minutos',          // 'segundos' | 'minutos' | 'horas'
+    cada: 30,
+    unidad: 'segundos',         // 'segundos' | 'minutos' | 'horas'
     dias: 'todos',              // o ['lunes', 'miercoles', 'viernes']
     dispositivos: ['Pixel 7', 'iPhone 14 Pro Max'],   // o 'todos'
     paginas: 'todas'            // o ids de pages.json
@@ -132,14 +132,23 @@ Todo lo que se puede cambiar está en archivos de configuración; **no hay que t
 
 | Se quiere | Se pone |
 |---|---|
+| Cada 30 segundos | `cada: 30, unidad: 'segundos'` |
+| Cada 50 segundos | `cada: 50, unidad: 'segundos'` |
 | Cada minuto | `cada: 1, unidad: 'minutos'` |
 | Cada 20 minutos | `cada: 20, unidad: 'minutos'` |
 | Cada hora | `cada: 1, unidad: 'horas'` |
 | Solo lunes y miércoles | `dias: ['lunes', 'miercoles']` |
 | Desactivar un job | `habilitado: false` |
 
-Valores permitidos para `cada`: segundos y minutos **1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30**; horas **1, 2, 3, 4, 6, 8, 12**
-(el cron va según el reloj: "cada 20 minutos" = a los :00, :20 y :40). Zona horaria: `America/Bogota`.
+`cada` acepta **cualquier número entero**. Zona horaria: `America/Bogota`.
+
+- Si el número cuadra con el reloj (segundos y minutos **1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30**; horas
+  **1, 2, 3, 4, 6, 8, 12**) se usa **cron**: "cada 20 minutos" = a los :00, :20 y :40.
+- Cualquier otro número (por ejemplo **50 segundos**) usa un **intervalo fijo** que cuenta desde que arranca
+  el scheduler; la primera ejecución ocurre al cumplirse el primer intervalo.
+
+Cada job tarda entre 40 y 80 segundos, así que con intervalos cortos (30 o 50 segundos) los jobs corren uno
+tras otro sin descanso: la cola evita que se ejecuten dos a la vez.
 
 ## 4. Ejecución
 
@@ -198,12 +207,17 @@ Cada ejecución **agrega** registros (nunca borra los anteriores), con el format
 }
 ```
 
-Si una medición falla, el registro queda con `"status": "error"` y el mensaje en `error`.
+Si Lighthouse no pudo medir (página caída, 404, etc.), el registro queda con `"status": "error"` y el mensaje
+en `error`.
 
 ### Informe en Google Sheets
 
 - **Informe:** una fila por medición (pantalla, resolución, página, fecha, FCP, LCP, SI, performance), con
-  **formato condicional** y **etiquetas de texto** (🟢 Bueno · 🟡 Por mejorar · 🔴 Deficiente) y el estado.
+  **formato condicional**, **etiquetas de texto** (🟢 Bueno · 🟡 Por mejorar · 🔴 Deficiente) y la columna
+  **Estado**:
+  - `✅ ok` — todas las métricas dentro del rango esperado.
+  - `❌ Falla: Performance 🟡 Por mejorar` — alguna métrica quedó por debajo del rango (ver `fallarDesde`).
+  - `❌ <mensaje>` — Lighthouse no pudo medir la página.
 - **Resumen:** promedios por página y dispositivo, mejor y peor performance, y comparación Desktop vs. Móvil.
 - **Rangos:** los umbrales usados para clasificar.
 
@@ -216,14 +230,30 @@ Si una medición falla, el registro queda con `"status": "error"` y el mensaje e
 | Speed Index | ≤ 3,4 s | > 3,4 – 5,8 s | > 5,8 s |
 | Performance | 90 – 100 | 50 – 89 | 0 – 49 |
 
-Al cambiar los rangos, las etiquetas se recalculan solas en el siguiente envío; los colores del formato
-condicional y la pestaña Rangos del Sheet se ajustan a mano.
+Al cambiar los rangos, las etiquetas y el estado se recalculan solos en el siguiente envío; los colores del
+formato condicional y la pestaña Rangos del Sheet se ajustan a mano.
+
+**Cuándo falla la prueba** — `"fallarDesde"` en el mismo archivo:
+
+| Valor | La prueba falla si alguna métrica queda en… |
+|---|---|
+| `"porMejorar"` (actual) | 🟡 Por mejorar o 🔴 Deficiente |
+| `"deficiente"` | solo 🔴 Deficiente |
+| `"nunca"` | nunca falla por rendimiento (solo si Lighthouse no puede medir) |
+
+La medición se guarda en el JSON y se envía al Sheet aunque la prueba falle.
 
 ### Evidencias de fallos — `cypress/evidencias/`
 
-Solo cuando algo falla se guardan, con fecha y hora en el nombre: **screenshots**, **videos** y **logs**
-(si Cypress se cerró solo). Las carpetas `cypress/screenshots` y `cypress/videos` son temporales y se limpian en
-cada corrida.
+Solo cuando una prueba falla (rendimiento por debajo del rango, página que no carga o Lighthouse que no puede
+medir) se guardan, con fecha y hora en el nombre:
+
+- **screenshots** — por ejemplo `rendimiento_sobre-la-uam_Pixel 7.png`, además del screenshot automático de Cypress
+- **videos** — la corrida completa del job
+- **logs** — si Cypress se cerró solo sin terminar
+
+Las carpetas `cypress/screenshots` y `cypress/videos` son temporales y se limpian en cada corrida. Con intervalos
+cortos se acumulan muchas evidencias (cada video pesa unos 3 MB): conviene limpiar la carpeta de vez en cuando.
 
 ## 6. Estructura del proyecto
 
@@ -249,6 +279,7 @@ Pruebas-enfasis-profesional/
     │   └── lighthouse-metrics.json   resultados (historial)
     ├── plugins/
     │   ├── lighthouse.js      mide con Lighthouse
+    │   ├── clasificacion.js   Bueno / Por mejorar / Deficiente y cuándo falla la prueba
     │   ├── metrics.js         guarda en el JSON
     │   ├── evidencias.js      screenshots y videos de los fallos
     │   └── sheets.js          envía al Google Sheet
@@ -269,5 +300,7 @@ Pruebas-enfasis-profesional/
 | El Sheet no se actualiza | Verificar que `npm run scheduler` esté corriendo |
 | Cambios en `schedule.js` sin efecto | Reiniciar el scheduler (`Ctrl + C` y `npm run scheduler`) |
 | Se borraron filas del Sheet | `npm run sheets` vuelve a poner las que faltan desde el JSON |
+| `lighthouse-metrics.json esta danado` | `git checkout -- cypress/fixtures/lighthouse-metrics.json` (vuelve al último commit) |
+| Casi todas las pruebas de móvil fallan | Es lo esperado con `"fallarDesde": "porMejorar"`: el performance móvil queda en 🟡. Ver sección 5 |
 
 Más detalle (qué hacer si se borra algo, cambios frecuentes) en `entregas/Guia-Proyecto-Metricas-Web.docx`.
