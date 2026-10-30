@@ -34,11 +34,12 @@ describe('Metricas web con Lighthouse - multi dispositivo', () => {
     let medicionActual = null;
 
     // Si la prueba fallo antes de medir (ej. la pagina no cargo), el error igual queda en el JSON.
-    // Los fallos de Lighthouse ya los guarda cy.medirPagina().
+    // Los fallos de Lighthouse y de rendimiento ya quedaron guardados por cy.medirPagina().
     afterEach(function () {
         const prueba = this.currentTest;
         const mensaje = prueba.err ? String(prueba.err.message) : 'Error desconocido';
-        if (prueba.state === 'failed' && medicionActual && !mensaje.includes('Lighthouse fallo')) {
+        const yaGuardado = mensaje.includes('Lighthouse fallo') || mensaje.includes('Rendimiento por debajo');
+        if (prueba.state === 'failed' && medicionActual && !yaGuardado) {
             cy.task('guardarMetrica', registroDeError(medicionActual.pagina, medicionActual.dispositivo, mensaje));
         }
     });

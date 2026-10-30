@@ -74,8 +74,8 @@ function agregarFilas(hoja, filas) {
   return nuevas.length;
 }
 
-// Para todas las filas de la tabla: nombre de la pagina con enlace (columna C)
-// y clasificacion como texto (I-L). Asi tambien se reparan filas anteriores.
+// Para todas las filas de la tabla: nombre de la pagina con enlace (columna C),
+// clasificacion como texto (I-L) y estado (M). Asi tambien se actualizan filas anteriores.
 // No se usan formulas: en un Sheet en español las formulas con comas dan #ERROR!
 function completarEnlacesYClasificacion(hoja, filas) {
   const ultima = hoja.getLastRow();
@@ -93,11 +93,12 @@ function completarEnlacesYClasificacion(hoja, filas) {
   });
   rangoC.setRichTextValues(enlaces);
 
-  const rangoClasif = hoja.getRange(FILA_INICIO, 9, total, 4);
+  // Columnas I-M: clasificacion (4) + estado (1)
+  const rangoClasif = hoja.getRange(FILA_INICIO, 9, total, 5);
   const clasifActual = rangoClasif.getValues();
   const clasificaciones = claves.map((clave, i) => {
     const f = porClave.get(clave);
-    return f ? f.clasificacion : clasifActual[i];
+    return f ? [...f.clasificacion, f.estado] : clasifActual[i];
   });
   rangoClasif.setValues(clasificaciones);
 }

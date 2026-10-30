@@ -24,6 +24,9 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+import rangos from '../fixtures/thresholds.json';
+import { clasificarRegistro, metricasQueFallan } from '../plugins/clasificacion';
+
 // Comando reutilizable: mide una pagina en un dispositivo con Lighthouse
 // y guarda el resultado en el JSON
 // Uso: cy.medirPagina(pagina, dispositivo)
@@ -42,6 +45,18 @@ Cypress.Commands.add('medirPagina', (pagina, dispositivo) => {
             if (registro.status === 'error') {
                 cy.screenshot(`error_${pagina.id}_${dispositivo.name}`).then(() => {
                     throw new Error(`Lighthouse fallo para ${pagina.id} en ${dispositivo.name}: ${registro.error}`);
+                });
+                return;
+            }
+
+            // Si alguna metrica queda por debajo del rango (fallarDesde en thresholds.json),
+            // la prueba falla: captura pantalla y queda el video como evidencia
+            const etiquetas = clasificarRegistro(registro, rangos);
+            const fallan = metricasQueFallan(etiquetas, rangos.fallarDesde);
+            if (fallan.length > 0) {
+                const detalle = fallan.map(([metrica, etiqueta]) => `${metrica} ${etiqueta}`).join(', ');
+                cy.screenshot(`rendimiento_${pagina.id}_${dispositivo.name}`).then(() => {
+                    throw new Error(`Rendimiento por debajo del rango en ${pagina.nombre} (${dispositivo.name}): ${detalle}`);
                 });
             } else {
                 cy.log(`${pagina.nombre} en ${dispositivo.name}: performance ${registro.performance}`);

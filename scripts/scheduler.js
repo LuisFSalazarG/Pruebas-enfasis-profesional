@@ -35,16 +35,28 @@ function diasACron(dias) {
     }).join(',');
 }
 
+const SEGUNDOS_POR_UNIDAD = { segundos: 1, minutos: 60, horas: 3600 };
+
+// Valida "cada" y "unidad" del job y devuelve el intervalo en segundos
+function intervaloEnSegundos(job) {
+    const factor = SEGUNDOS_POR_UNIDAD[normalizar(job.unidad)];
+    if (!factor) {
+        throw new Error(`unidad "${job.unidad}" no valida (usa: segundos, minutos, horas)`);
+    }
+    if (!Number.isInteger(job.cada) || job.cada <= 0) {
+        throw new Error(`"cada" debe ser un numero entero mayor que 0 (recibido: ${job.cada})`);
+    }
+    return job.cada * factor;
+}
+
 // Funcion generica: convierte "cada N unidad" + dias en una expresion cron
 // Formato cron de 6 campos: segundo minuto hora diaDelMes mes diaDeLaSemana
+// Devuelve null si el intervalo no cuadra con el reloj (ej. 50 segundos): ese job usa intervalo fijo
 function aCron(job) {
     const cada = job.cada;
     const unidad = normalizar(job.unidad);
     const dias = diasACron(job.dias);
 
-    if (!Number.isInteger(cada) || cada <= 0) {
-        throw new Error(`"cada" debe ser un numero entero mayor que 0 (recibido: ${cada})`);
-    }
     if (unidad === 'segundos' && cada < 60 && 60 % cada === 0) {
         return `*/${cada} * * * * ${dias}`;
     }
@@ -54,7 +66,15 @@ function aCron(job) {
     if (unidad === 'horas' && cada < 24 && 24 % cada === 0) {
         return `0 0 */${cada} * * ${dias}`;
     }
-    throw new Error(`"cada ${cada} ${job.unidad}" no se puede programar exacto. Segundos/minutos: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30. Horas: 1, 2, 3, 4, 6, 8, 12`);
+    return null;
+}
+
+// Para jobs con intervalo fijo: revisa que hoy sea uno de los dias configurados (hora de Bogota)
+function esDiaPermitido(job) {
+    if (!job.dias || job.dias === 'todos') return true;
+    const hoy = new Intl.DateTimeFormat('en-US', { timeZone: ZONA, weekday: 'short' }).format(new Date());
+    const numeroHoy = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[hoy];
+    return diasACron(job.dias).split(',').map(Number).includes(numeroHoy);
 }
 
 // Solo corre un Cypress a la vez: si hay uno corriendo, el job espera su turno
@@ -143,9 +163,19 @@ if (habilitados.length === 0) {
 
 habilitados.forEach((job) => {
     try {
+        const segundos = intervaloEnSegundos(job);
         const expresion = aCron(job);
-        cron.schedule(expresion, () => pedirEjecucion(job), { timezone: ZONA });
-        log(`Job "${job.nombre}" programado cada ${job.cada} ${job.unidad}, dias: ${job.dias} (cron: ${expresion})`);
+        if (expresion) {
+            // Cuadra con el reloj: cron (ej. cada 20 minutos = a los :00, :20 y :40)
+            cron.schedule(expresion, () => pedirEjecucion(job), { timezone: ZONA });
+            log(`Job "${job.nombre}" programado cada ${job.cada} ${job.unidad}, dias: ${job.dias} (cron: ${expresion})`);
+        } else {
+            // No cuadra con el reloj (ej. 50 segundos): intervalo fijo desde que arranca el scheduler
+            setInterval(() => {
+                if (esDiaPermitido(job)) pedirEjecucion(job);
+            }, segundos * 1000);
+            log(`Job "${job.nombre}" programado cada ${job.cada} ${job.unidad}, dias: ${job.dias} (intervalo fijo, primera ejecucion en ${segundos} s)`);
+        }
     } catch (error) {
         log(`Job "${job.nombre}" NO se programo: ${error.message}`);
     }
