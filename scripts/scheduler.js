@@ -6,6 +6,7 @@ const cron = require('node-cron');
 const { spawn } = require('child_process');
 const schedule = require('../config/schedule');
 const { guardarLog, tomarScreenshots, registrarErrores } = require('./evidencia-cierre');
+const { enviarASheets } = require('../cypress/plugins/sheets');
 
 const SPEC = 'cypress/e2e/metricas-web/metricas_web.cy.js';
 const ZONA = schedule.zonaHoraria;
@@ -118,6 +119,11 @@ function ejecutarSiguiente() {
         } else if (codigo !== 0) {
             log(`Job "${job.nombre}" con fallos: revisa el JSON y cypress/evidencias/`);
         }
+
+        // Cada vez que termina un job, el informe en Google Sheets se actualiza con el JSON
+        enviarASheets()
+            .then((r) => log(r.ok ? `Sheets: ${r.agregadas} filas nuevas en el informe` : `Sheets: no se envio -> ${r.error}`))
+            .catch((error) => log(`Sheets: error al enviar -> ${error.message}`));
 
         enPausa = true;
         setTimeout(() => {
