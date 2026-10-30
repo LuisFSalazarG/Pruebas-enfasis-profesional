@@ -1,0 +1,6 @@
+{
+    "firstContentfulPaint":   { "bueno": 1.8, "porMejorar": 3.0, "mejorEs": "menor" },
+    "largestContentfulPaint": { "bueno": 2.5, "porMejorar": 4.0, "mejorEs": "menor" },
+    "speedIndex":             { "bueno": 3.4, "porMejorar": 5.8, "mejorEs": "menor" },
+    "performance":            { "bueno": 90,  "porMejorar": 50,  "mejorEs": "mayor" }
+}

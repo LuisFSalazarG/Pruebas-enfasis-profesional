@@ -1,0 +1,14 @@
+[
+    {
+        "id": "sobre-la-uam",
+        "nombre": "Sobre la UAM",
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "responsable": "Victor Manuel Garcia"
+    },
+    {
+        "id": "semilleros-investigacion",
+        "nombre": "Semilleros de investigacion",
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "responsable": "Luis Salazar"
+    }
+]

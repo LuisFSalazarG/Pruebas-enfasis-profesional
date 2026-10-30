@@ -1,0 +1,5 @@
+[
+    { "name": "Desktop", "width": 1280, "height": 720, "mobile": false },
+    { "name": "Pixel 7", "width": 412, "height": 915, "mobile": true },
+    { "name": "iPhone 14 Pro Max", "width": 430, "height": 932, "mobile": true }
+]

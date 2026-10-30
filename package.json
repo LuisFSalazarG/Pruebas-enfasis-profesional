@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cypress run --browser chrome",
+    "metricas": "cypress run --browser chrome --spec cypress/e2e/metricas-web/metricas_web.cy.js",
+    "cy:open": "cypress open"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,7 @@
   },
   "homepage": "https://github.com/LuisFSalazarG/Pruebas-enfasis-profesional#readme",
   "devDependencies": {
+    "@cypress-audit/lighthouse": "^1.4.2",
     "cypress": "^16.2.1"
   }
 }

@@ -15,3 +15,9 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+
+// Ignorar errores de JavaScript de la pagina web bajo prueba
+// (las paginas de la UAM pueden tener errores internos que no afectan la medicion)
+Cypress.on('uncaught:exception', (err, runnable) => {
+    return false
+})
