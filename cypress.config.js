@@ -12,6 +12,7 @@ module.exports = defineConfig({
     pageLoadTimeout: 120000, // 120 segundos
     supportFile: "cypress/support/e2e.js",
     video: true,
+    videoCompression: false, // sin compresion: evita un segundo archivo de video y el renombrado
     screenshotOnRunFailure: true,
     trashAssetsBeforeRuns: false, // conservar screenshots y videos de corridas anteriores (evidencias)
     setupNodeEvents(on, config) {

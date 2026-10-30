@@ -18,7 +18,7 @@ function log(mensaje) {
 
 // Quita tildes y pasa a minusculas: "Miércoles" -> "miercoles"
 function normalizar(texto) {
-    return String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return String(texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
 // ['lunes', 'miercoles'] -> "1,3"   |   'todos' -> "*"
@@ -76,12 +76,8 @@ function ejecutarSiguiente() {
     const inicio = Date.now();
     log(`Inicia job "${job.nombre}"`);
 
-    const proceso = spawn('npx', [
-        'cypress', 'run',
-        '--browser', 'chrome',
-        '--spec', SPEC,
-        '--expose', `job=${job.nombre}`
-    ], { stdio: 'inherit', shell: true });
+    const comando = `npx cypress run --browser chrome --spec ${SPEC} --expose job=${job.nombre}`;
+    const proceso = spawn(comando, { stdio: 'inherit', shell: true });
 
     proceso.on('close', (codigo) => {
         const duracion = Math.round((Date.now() - inicio) / 1000);

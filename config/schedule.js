@@ -15,7 +15,7 @@ module.exports = {
         {
             nombre: 'movil',
             habilitado: true,
-            cada: 1,
+            cada: 2,
             unidad: 'minutos',
             dias: 'todos',
             dispositivos: ['Pixel 7', 'iPhone 14 Pro Max'],
@@ -24,7 +24,7 @@ module.exports = {
         {
             nombre: 'escritorio',
             habilitado: true,
-            cada: 1,
+            cada: 2,
             unidad: 'minutos',
             dias: 'todos',
             dispositivos: ['Desktop'],
