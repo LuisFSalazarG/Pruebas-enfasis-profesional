@@ -69,11 +69,13 @@ function pedirEjecucion(job) {
     ejecutarSiguiente();
 }
 
-// Si Cypress se cierra en menos de este tiempo con error, no alcanzo a medir: se reintenta una vez
-const SEGUNDOS_CIERRE_INESPERADO = 20;
+// Pausa entre corridas: le da tiempo al Chrome de la corrida anterior de cerrarse
+// (si no, Cypress puede quedarse esperando la conexion con Chrome y cerrarse)
+const PAUSA_ENTRE_CORRIDAS_MS = 5000;
+let enPausa = false;
 
 function ejecutarSiguiente() {
-    if (jobActual || cola.length === 0) return;
+    if (jobActual || enPausa || cola.length === 0) return;
 
     const job = cola.shift();
     jobActual = job.nombre;
@@ -97,23 +99,31 @@ function ejecutarSiguiente() {
         log(`Termina job "${job.nombre}" en ${duracion} s (codigo de salida ${codigo})`);
         jobActual = null;
 
-        if (codigo !== 0 && duracion < SEGUNDOS_CIERRE_INESPERADO) {
-            // Cypress se cerro sin correr las pruebas: no pudo tomar screenshots, se toman aqui
+        // Si Cypress termina bien su corrida imprime "(Run Finished)", aunque alguna prueba falle.
+        // Si no lo imprimio, Cypress se cerro solo: no alcanzo a tomar screenshots, se toman aqui
+        const seCerroSolo = codigo !== 0 && !salida.includes('(Run Finished)');
+
+        if (seCerroSolo) {
             const archivoLog = guardarLog(job, salida);
             const capturas = tomarScreenshots(job);
-            log(`Job "${job.nombre}": Cypress se cerro antes de medir. Log: ${archivoLog} | screenshots: ${capturas.length}`);
+            log(`Job "${job.nombre}": Cypress se cerro sin terminar. Log: ${archivoLog} | screenshots: ${capturas.length}`);
 
             if (!job.esReintento) {
                 log(`Job "${job.nombre}": se reintenta una vez`);
                 cola.unshift({ ...job, esReintento: true });
             } else {
-                registrarErrores(job, `Cypress se cerro antes de medir (codigo ${codigo}); ver ${archivoLog}`);
+                registrarErrores(job, `Cypress se cerro sin terminar (codigo ${codigo}); ver ${archivoLog}`);
                 log(`Job "${job.nombre}": el reintento tambien fallo, el error quedo registrado en el JSON`);
             }
         } else if (codigo !== 0) {
             log(`Job "${job.nombre}" con fallos: revisa el JSON y cypress/evidencias/`);
         }
-        ejecutarSiguiente();
+
+        enPausa = true;
+        setTimeout(() => {
+            enPausa = false;
+            ejecutarSiguiente();
+        }, PAUSA_ENTRE_CORRIDAS_MS);
     });
 }
 

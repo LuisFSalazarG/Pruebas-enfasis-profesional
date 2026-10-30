@@ -1,6 +1,6 @@
 // evidencia-cierre.js
-// Evidencias cuando Cypress se cierra solo, sin alcanzar a correr las pruebas
-// (en ese caso Cypress no puede tomar screenshots):
+// Evidencias cuando Cypress se cierra solo, sin terminar la corrida
+// (en ese caso Cypress no alcanza a tomar screenshots):
 //   - guarda la salida de la terminal en cypress/evidencias/logs
 //   - toma un screenshot de cada pagina del job con Chrome (sin Cypress)
 //   - si el reintento tambien falla, registra el error en el JSON de metricas
