@@ -6,7 +6,8 @@
   "scripts": {
     "test": "cypress run --browser chrome",
     "metricas": "cypress run --browser chrome --spec cypress/e2e/metricas-web/metricas_web.cy.js",
-    "cy:open": "cypress open"
+    "cy:open": "cypress open",
+    "scheduler": "node scripts/scheduler.js"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,8 @@
   "devDependencies": {
     "@cypress-audit/lighthouse": "^1.4.2",
     "cypress": "^16.2.1"
+  },
+  "dependencies": {
+    "node-cron": "^4.6.0"
   }
 }

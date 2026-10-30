@@ -64,5 +64,115 @@
         "performance": 80,
         "status": "ok",
         "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "screenEmulation": "Pixel 7 (412x915)",
+        "timestamp": "2026-10-30T01:01:06.358Z",
+        "firstContentfulPaint": "1.3 s",
+        "largestContentfulPaint": "1.6 s",
+        "speedIndex": "2.5 s",
+        "performance": 69,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "screenEmulation": "Pixel 7 (412x915)",
+        "timestamp": "2026-10-30T01:01:38.504Z",
+        "firstContentfulPaint": "1.2 s",
+        "largestContentfulPaint": "1.7 s",
+        "speedIndex": "4.5 s",
+        "performance": 67,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "screenEmulation": "iPhone 14 Pro Max (430x932)",
+        "timestamp": "2026-10-30T01:02:01.459Z",
+        "firstContentfulPaint": "1.3 s",
+        "largestContentfulPaint": "1.7 s",
+        "speedIndex": "2.4 s",
+        "performance": 70,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "screenEmulation": "iPhone 14 Pro Max (430x932)",
+        "timestamp": "2026-10-30T01:02:26.276Z",
+        "firstContentfulPaint": "1.2 s",
+        "largestContentfulPaint": "1.6 s",
+        "speedIndex": "2.1 s",
+        "performance": 70,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "screenEmulation": "Desktop (1280x720)",
+        "timestamp": "2026-10-30T01:03:34.088Z",
+        "firstContentfulPaint": "0.4 s",
+        "largestContentfulPaint": "0.5 s",
+        "speedIndex": "1.0 s",
+        "performance": 72,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "screenEmulation": "Desktop (1280x720)",
+        "timestamp": "2026-10-30T01:04:03.021Z",
+        "firstContentfulPaint": "0.3 s",
+        "largestContentfulPaint": "0.5 s",
+        "speedIndex": "0.7 s",
+        "performance": 76,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "screenEmulation": "Pixel 7 (412x915)",
+        "timestamp": "2026-10-30T01:05:13.687Z",
+        "firstContentfulPaint": "1.3 s",
+        "largestContentfulPaint": "2.1 s",
+        "speedIndex": "2.9 s",
+        "performance": 68,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "screenEmulation": "Pixel 7 (412x915)",
+        "timestamp": "2026-10-30T01:05:51.758Z",
+        "firstContentfulPaint": "1.4 s",
+        "largestContentfulPaint": "1.5 s",
+        "speedIndex": "2.4 s",
+        "performance": 70,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/conoce-la-uam/sobre-la-uam",
+        "screenEmulation": "iPhone 14 Pro Max (430x932)",
+        "timestamp": "2026-10-30T01:06:14.214Z",
+        "firstContentfulPaint": "1.3 s",
+        "largestContentfulPaint": "1.5 s",
+        "speedIndex": "2.4 s",
+        "performance": 70,
+        "status": "ok",
+        "error": null
+    },
+    {
+        "url": "https://www.autonoma.edu.co/investigacion-innovacion-y-emprendimiento/semilleros-de-investigacion",
+        "screenEmulation": "iPhone 14 Pro Max (430x932)",
+        "timestamp": "2026-10-30T01:06:37.693Z",
+        "firstContentfulPaint": "1.5 s",
+        "largestContentfulPaint": "1.6 s",
+        "speedIndex": "2.2 s",
+        "performance": 70,
+        "status": "ok",
+        "error": null
     }
 ]
