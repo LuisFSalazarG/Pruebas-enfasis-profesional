@@ -30,8 +30,9 @@
 Cypress.Commands.add('medirPagina', (pagina, dispositivo) => {
 
     // Abrir la pagina con la resolucion del dispositivo (queda en el video / screenshot)
+    // failOnStatusCode: false -> si la pagina responde 404/500 igual se mide y el error queda en el JSON
     cy.viewport(dispositivo.width, dispositivo.height);
-    cy.visit(pagina.url);
+    cy.visit(pagina.url, { failOnStatusCode: false });
 
     // Medir con Lighthouse (corre en Node) y guardar en el historial
     cy.task('medirLighthouse', { url: pagina.url, dispositivo }, { timeout: 180000 }).then((registro) => {

@@ -5,6 +5,7 @@
 const cron = require('node-cron');
 const { spawn } = require('child_process');
 const schedule = require('../config/schedule');
+const { guardarLog, tomarScreenshots, registrarErrores } = require('./evidencia-cierre');
 
 const SPEC = 'cypress/e2e/metricas-web/metricas_web.cy.js';
 const ZONA = schedule.zonaHoraria;
@@ -68,21 +69,50 @@ function pedirEjecucion(job) {
     ejecutarSiguiente();
 }
 
+// Si Cypress se cierra en menos de este tiempo con error, no alcanzo a medir: se reintenta una vez
+const SEGUNDOS_CIERRE_INESPERADO = 20;
+
 function ejecutarSiguiente() {
     if (jobActual || cola.length === 0) return;
 
     const job = cola.shift();
     jobActual = job.nombre;
     const inicio = Date.now();
-    log(`Inicia job "${job.nombre}"`);
+    log(`Inicia job "${job.nombre}"${job.esReintento ? ' (reintento)' : ''}`);
 
     const comando = `npx cypress run --browser chrome --spec ${SPEC} --expose job=${job.nombre}`;
-    const proceso = spawn(comando, { stdio: 'inherit', shell: true });
+    const proceso = spawn(comando, { stdio: ['inherit', 'pipe', 'pipe'], shell: true });
+
+    // Se muestra la salida de Cypress en la terminal y tambien se guarda por si hay que dejarla como evidencia
+    let salida = '';
+    const copiar = (destino) => (datos) => {
+        destino.write(datos);
+        salida = (salida + datos.toString()).slice(-200000);
+    };
+    proceso.stdout.on('data', copiar(process.stdout));
+    proceso.stderr.on('data', copiar(process.stderr));
 
     proceso.on('close', (codigo) => {
         const duracion = Math.round((Date.now() - inicio) / 1000);
         log(`Termina job "${job.nombre}" en ${duracion} s (codigo de salida ${codigo})`);
         jobActual = null;
+
+        if (codigo !== 0 && duracion < SEGUNDOS_CIERRE_INESPERADO) {
+            // Cypress se cerro sin correr las pruebas: no pudo tomar screenshots, se toman aqui
+            const archivoLog = guardarLog(job, salida);
+            const capturas = tomarScreenshots(job);
+            log(`Job "${job.nombre}": Cypress se cerro antes de medir. Log: ${archivoLog} | screenshots: ${capturas.length}`);
+
+            if (!job.esReintento) {
+                log(`Job "${job.nombre}": se reintenta una vez`);
+                cola.unshift({ ...job, esReintento: true });
+            } else {
+                registrarErrores(job, `Cypress se cerro antes de medir (codigo ${codigo}); ver ${archivoLog}`);
+                log(`Job "${job.nombre}": el reintento tambien fallo, el error quedo registrado en el JSON`);
+            }
+        } else if (codigo !== 0) {
+            log(`Job "${job.nombre}" con fallos: revisa el JSON y cypress/evidencias/`);
+        }
         ejecutarSiguiente();
     });
 }

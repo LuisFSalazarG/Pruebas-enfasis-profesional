@@ -6,3 +6,8 @@ node_modules/
 
 # Descargas temporales de Cypress
 cypress/downloads/
+
+# Carpetas temporales de Cypress (se limpian en cada corrida).
+# Las evidencias de los fallos se guardan en cypress/evidencias/
+cypress/screenshots/
+cypress/videos/

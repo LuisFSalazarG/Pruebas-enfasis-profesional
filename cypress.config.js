@@ -1,9 +1,9 @@
 //aca van las variables globales
 const { defineConfig } = require("cypress");
-const fs = require("fs");
 const { prepareAudit } = require("@cypress-audit/lighthouse");
 const { medirLighthouse } = require("./cypress/plugins/lighthouse");
 const { guardarMetrica } = require("./cypress/plugins/metrics");
+const { guardarScreenshot, procesarVideo } = require("./cypress/plugins/evidencias");
 
 module.exports = defineConfig({
   e2e: {
@@ -14,7 +14,9 @@ module.exports = defineConfig({
     video: true,
     videoCompression: false, // sin compresion: evita un segundo archivo de video y el renombrado
     screenshotOnRunFailure: true,
-    trashAssetsBeforeRuns: false, // conservar screenshots y videos de corridas anteriores (evidencias)
+    // Cypress limpia screenshots/ y videos/ al iniciar cada corrida (evita choques de nombres);
+    // las evidencias de los fallos quedan guardadas en cypress/evidencias/
+    trashAssetsBeforeRuns: true,
     setupNodeEvents(on, config) {
       // Implementar event listeners aqui
       on('before:browser:launch', (browser = {}, launchOptions) => {
@@ -29,15 +31,13 @@ module.exports = defineConfig({
       // Tareas que corren en Node (fuera del navegador): medir y guardar en el JSON
       on('task', { medirLighthouse, guardarMetrica });
 
-      // Conservar el video solo si algun test del spec fallo
-      on('after:spec', (spec, results) => {
-        if (results && results.video && results.stats.failures === 0 && fs.existsSync(results.video)) {
-          fs.unlinkSync(results.video);
-        }
-      });
-
       // Si el cron pasa un job (--expose job=movil), medir solo sus dispositivos y paginas
       const nombreJob = config.expose && config.expose.job;
+
+      // Evidencias: screenshots y videos solo de los fallos, guardados en cypress/evidencias/
+      on('after:screenshot', guardarScreenshot);
+      on('after:spec', (spec, results) => procesarVideo(results, nombreJob));
+
       if (nombreJob) {
         const { jobs = [] } = require("./config/schedule");
         const job = jobs.find((j) => j.nombre === nombreJob);
